@@ -1,0 +1,42 @@
+name: convert
+
+services:
+  convert:
+    image: ${CONVERT_IMAGE:?Set CONVERT_IMAGE in .env}
+    pull_policy: never
+    platform: linux/amd64
+    init: true
+    ports:
+      - "${BIND_ADDRESS:-127.0.0.1}:${HTTP_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATA_DIR: /data
+      MAX_FILE_SIZE_MB: ${MAX_FILE_SIZE_MB:-50}
+      MAX_FILES_PER_JOB: ${MAX_FILES_PER_JOB:-50}
+      QUEUE_CONCURRENCY: ${QUEUE_CONCURRENCY:-2}
+      FILE_TTL_HOURS: ${FILE_TTL_HOURS:-2}
+      RATE_LIMIT_PER_MIN: ${RATE_LIMIT_PER_MIN:-600}
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data
+        bind:
+          create_host_path: false
+    restart: unless-stopped
+    stop_grace_period: 35s
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    cpus: "${CPU_LIMIT:-2.0}"
+    mem_limit: ${MEMORY_LIMIT:-3g}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

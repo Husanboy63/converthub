@@ -1,0 +1,29 @@
+name: Build admin Docker bundle
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build, test and package Linux image
+        run: bash scripts/build-release.sh "sha-${GITHUB_SHA:0:12}"
+      - name: Upload administrator bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: convert-admin-${{ github.sha }}
+          path: release/convert-admin-*.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
