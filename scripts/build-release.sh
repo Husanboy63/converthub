@@ -40,6 +40,8 @@ address="$("${compose[@]}" port convert 3000)"
 SMOKE_RESULT_FILE="$test_dir/job-id" node scripts/smoke.mjs "http://$address"
 "${compose[@]}" restart
 "${compose[@]}" up -d --wait --wait-timeout 90
+# Docker can allocate a different ephemeral host port after restarting.
+address="$("${compose[@]}" port convert 3000)"
 SMOKE_JOB_ID="$(cat "$test_dir/job-id")" node scripts/smoke.mjs "http://$address"
 
 mkdir -p "$bundle"
